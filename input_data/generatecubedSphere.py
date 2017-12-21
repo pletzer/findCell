@@ -1,4 +1,4 @@
-from igCubedSphereElv import igCubedSphereElv
+from igCubedSphereElv import CubedSphereElv
 import argparse
 
 parser = argparse.ArgumentParser(description='Generate cubed sphere grid')
@@ -7,7 +7,7 @@ parser.add_argument('-z', type=int, default=2, help='Number of vertical cells')
 args = parser.parse_args()
 
 numCells = args.n
-numelvs = args.z
+numElvs = args.z
 
-cs3d = CubedSphereElv(numCells, numElvs=numElvs)
-cs3d.save('cs.vtk')
+cs = CubedSphereElv(numCells, numElvs=numElvs)
+cs.save('cs.vtk')
