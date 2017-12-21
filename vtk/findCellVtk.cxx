@@ -11,8 +11,8 @@ int main(int argc, char** argv) {
 
     CmdLineArgParser args;
     args.setPurpose("Find cell that contains a point.");
-    args.set("-m", "cs.vtk", "Mesh file name.");
-    args.set("-p", "points.vtk", "File name containing target points.");
+    args.set("-m", std::string("cs.vtk"), "Mesh file name.");
+    args.set("-p", std::string("points.vtk"), "File name containing target points.");
     args.set("-t", 1.e-10, "Tolerance.");
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -26,6 +26,8 @@ int main(int argc, char** argv) {
         std::cerr << "ERROR:\nRun " << argv[0] << " -h to see all options\n";
         return 1;
     }
+    std::cout << "Mesh file: " << args.get<std::string>("-m") << '\n';
+    std::cout << "Point file: " << args.get<std::string>("-p") << '\n';
 
 
     // read the mesh
@@ -49,6 +51,7 @@ int main(int argc, char** argv) {
     int totFailures = 0;
     std::clock_t tic = clock();
     for (size_t i = 0; i < points->GetNumberOfPoints(); ++i) {
+        points->GetPoints()->GetPoint(i, xyz);
         vtkIdType cellId = mesh->FindCell(xyz, NULL, 0, tol2, subId, pcoords, weights);
         if (cellId < 0) totFailures++;
     }
