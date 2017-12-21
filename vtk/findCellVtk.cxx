@@ -1,4 +1,4 @@
-//
+// Using the standard FinCell method  that comes with vtkUnstructuredGrid
 //
 #include <iostream>
 #include <string>
@@ -49,8 +49,9 @@ int main(int argc, char** argv) {
     double pcoords[3];
     double weights[8];
     int totFailures = 0;
+    size_t numPoints = points->GetNumberOfPoints();
     std::clock_t tic = clock();
-    for (size_t i = 0; i < points->GetNumberOfPoints(); ++i) {
+    for (size_t i = 0; i < numPoints; ++i) {
         points->GetPoints()->GetPoint(i, xyz);
         vtkIdType cellId = mesh->FindCell(xyz, NULL, 0, tol2, subId, pcoords, weights);
         if (cellId < 0) totFailures++;
@@ -58,8 +59,8 @@ int main(int argc, char** argv) {
     std::clock_t toc = clock();
     double elapsed_secs = double(toc - tic) / CLOCKS_PER_SEC;
 
-    std::cout << "Number of failures: " << totFailures << '\n';
-    std::cout << "Elapsed time      : " << elapsed_secs << '\n';
+    std::cout << "Number of failures: " << totFailures << " (" << 100.*double(totFailures)/double(numPoints) << " %)\n";
+    std::cout << "Elapsed time (s)  : " << elapsed_secs << '\n';
 
     return 0;
 }
