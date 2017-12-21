@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     // build the cell locator
     vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetDataSet(points);
+    loc->SetDataSet(mesh);
     loc->SetNumberOfCellsPerBucket(args.get<int>("-b"));
     loc->BuildLocator();
 
