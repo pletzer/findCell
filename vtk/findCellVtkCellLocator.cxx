@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     // build the cell locator
     vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetDataSet(points);
+    loc->SetDataSet(mesh);
     loc->SetNumberOfCellsPerBucket(args.get<int>("-b"));
     loc->BuildLocator();
 
@@ -67,8 +67,9 @@ int main(int argc, char** argv) {
     std::clock_t toc = clock();
     double elapsed_secs = double(toc - tic) / CLOCKS_PER_SEC;
 
-    std::cout << "Number of failures: " << totFailures << " (" << 100.*double(totFailures)/double(numPoints) << " %)\n";
-    std::cout << "Elapsed time (s)  : " << elapsed_secs << '\n';
+    std::cout << "Number of failures     : " << totFailures << " (" << 100.*double(totFailures)/double(numPoints) << " %)\n";
+    std::cout << "Avg time per point  (s): " << elapsed_secs/double(numPoints) << '\n';
+    std::cout << "Time for all points (s): " << elapsed_secs << '\n';
 
     // clean up
     genCell->Delete();
