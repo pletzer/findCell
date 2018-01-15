@@ -53,12 +53,15 @@ int main(int argc, char** argv) {
     const char* varname = "";
     ESMC_Mesh mesh = ESMC_MeshCreateFromFile(filename, fileTypeFlag, &convertToDual, &addUserArea, 
                                              meshname, &maskFlag, varname, &rc);
+    if (rc != ESMF_SUCCESS) std::cerr<< "ERROR: after creating mesh, rc = " << rc << '\n';
 
     //std::cout << "Number of failures     : " << totFailures << " (" << 100.*double(totFailures)/double(numPoints) << " %)\n";
     //std::cout << "Avg time per point  (s): " << elapsed_secs/double(numPoints) << '\n';
     //std::cout << "Time for all points (s): " << elapsed_secs << '\n';
 
     // clean up
+    rc = ESMC_MeshDestroy(&mesh);
+    if (rc != ESMF_SUCCESS) std::cerr<< "ERROR: after destroying mesh, rc = " << rc << '\n';
     ESMC_Finalize();
     
     return 0;
