@@ -8,5 +8,5 @@ link_directories(${CMAKE_BINARY_DIR}/common "${ESMF_DIR}/lib/libO/${ESMF_OS}.${E
 
 add_executable(findCellEsmf findCellEsmf.cxx)
 #target_link_libraries(findCellEsmf CmdLineArgParser "${ESMF_LIBRARY}" -lgfortran -lpthread -lmpifort -dl -lrt)
-target_link_libraries(findCellEsmf CmdLineArgParser esmf -lgfortran -lpthread -lmpifort -ldl -lrt)
+target_link_libraries(findCellEsmf CmdLineArgParser esmf gfortran pthread mpifort dl)
 
