@@ -126,6 +126,9 @@ program findCell
     write(*,*) 
   endif
 
+  ! clean up
+  call ESMF_MeshDestroy(mesh, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
 1111  continue
   call ESMF_Finalize()
@@ -136,7 +139,7 @@ contains
     integer ::  localPet
   
     if (localPet >= 0) then
-      write(*,*) "ERROR: Problem on processor ",localPet,". Please see the PET*.RegridWeightGen.Log files for a traceback."
+      write(*,*) "ERROR: Problem on processor ",localPet,". Please see the PET*.findCell.Log files for a traceback."
     else
       write(*,*) "ERROR: Please see the PET*.RegridWeightGen.Log files for a traceback."
     endif
