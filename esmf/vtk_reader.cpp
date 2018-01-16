@@ -20,11 +20,11 @@ void vtk_reader_getnumberofpoints_(vtkUnstructuredGridReader** self, int* n) {
 }
 
 void vtk_reader_getnumberofcells_(vtkUnstructuredGridReader** self, int* n) {
-    *n = (*self)->GetOutput()->GetNumberCells();
+    *n = (*self)->GetOutput()->GetNumberOfCells();
 }
 
 void vtk_reader_fillvertices_(vtkUnstructuredGridReader** self, int* pointIds, double* xyz) {
-    vtkPoints* points = (*self)->GetPoints();
+    vtkPoints* points = (*self)->GetOutput()->GetPoints();
     vtkIdType numPoints = points->GetNumberOfPoints();
     for (vtkIdType i = 0; i < numPoints; ++i) {
         pointIds[i] = i + 1; // indexing is 1-based in ESMF
@@ -33,16 +33,16 @@ void vtk_reader_fillvertices_(vtkUnstructuredGridReader** self, int* pointIds, d
 }
 
 void vtk_reader_fillconnectivity_(vtkUnstructuredGridReader** self, int* elementIds, int* elementConn) {
-    vtkCellArray* cells = (*self)->GetCells();
+    vtkCellArray* cells = (*self)->GetOutput()->GetCells();
     vtkIdType index = 0;
     vtkIdList* ptIds = vtkIdList::New();
     cells->InitTraversal();
     for (vtkIdType cellId = 0; cellId < cells->GetNumberOfCells(); ++cellId) {
         elementIds[cellId] = cellId + 1;
         cells->GetNextCell(ptIds);
-        vtkIdType numVerts = ptIds.GetNumberOfIds()
+        vtkIdType numVerts = ptIds->GetNumberOfIds();
         for (vtkIdType k = 0; k < numVerts; ++k) {
-            elementConn[index + k] = ptIds.GetId(k) + 1; // index is 1-based
+            elementConn[index + k] = ptIds->GetId(k) + 1; // index is 1-based
         }
         index += numVerts;
     }
