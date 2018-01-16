@@ -30,7 +30,8 @@ program findCell
 
   type(ESMF_Mesh) :: mesh
 
-  integer                         :: numNodes, mreaderId
+  integer                         :: numNodes
+  integer*8                       :: mreaderId
   integer, allocatable            :: nodeIds(:)
   real(ESMF_KIND_R8), allocatable :: nodeCoords(:)
   integer, allocatable            :: nodeOwners(:)
@@ -108,6 +109,9 @@ program findCell
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
   meshfilename = commandbuf1(1)
   pointfilename = commandbuf1(2)
+  meshfilename = trim(adjustl(meshfilename))
+  pointfilename = trim(adjustl(pointfilename))
+
 
   mesh = ESMF_MeshCreate(parametricDim=3, spatialDim=3, coordSys=ESMF_COORDSYS_CART, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
