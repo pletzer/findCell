@@ -119,7 +119,7 @@ program findCell
   ! get the vertices from the VTK file
   write(*,*) "[", PetNo, "] mesh file: ", meshfilename
   call vtk_reader_new(mreaderId)
-  call vtk_reader_setfilename(mreaderId, meshfilename)
+  call vtk_reader_setfilename(mreaderId, meshfilename, len_trim(meshfilename))
   call vtk_reader_getnumberofpoints(mreaderId, numNodes)
   allocate(nodeIds(numNodes), nodeCoords(3*numNodes), nodeOwners(numNodes), stat=rc)
   nodeOwners(:) = PetNo

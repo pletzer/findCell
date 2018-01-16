@@ -7,7 +7,7 @@ void vtk_reader_new_(vtkUnstructuredGridReader** self) {
     *self = vtkUnstructuredGridReader::New();
 }
 
-void vtk_reader_setfilename_(vtkUnstructuredGridReader** self, const char* filename, int len) {
+void vtk_reader_setfilename_(vtkUnstructuredGridReader** self, const char* filename, int len, ...) {
     // add termination character
     std::string fn = std::string(filename).substr(0, len) + std::string('\0');
     (*self)->SetFileName(fn.c_str());
