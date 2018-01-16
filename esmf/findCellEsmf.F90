@@ -30,9 +30,9 @@ program findCell
 
   type(ESMF_Mesh) :: mesh
 
-  integer                         :: numNodes
+  integer                         :: numNodes, numCells
   integer*8                       :: mreaderId
-  integer, allocatable            :: nodeIds(:)
+  integer, allocatable            :: nodeIds(:), elementIds(:), elementTypes(:), elementConn(:)
   real(ESMF_KIND_R8), allocatable :: nodeCoords(:)
   integer, allocatable            :: nodeOwners(:)
   
@@ -121,14 +121,21 @@ program findCell
   call vtk_reader_new(mreaderId)
   call vtk_reader_setfilename(mreaderId, meshfilename, len_trim(meshfilename))
   call vtk_reader_getnumberofpoints(mreaderId, numNodes)
+  call vtk_reader_getnumberofcells(mreaderId, numCells)
+
   allocate(nodeIds(numNodes), nodeCoords(3*numNodes), nodeOwners(numNodes), stat=rc)
+
   nodeOwners(:) = PetNo
   call vtk_reader_fillvertices(mreaderId, nodeIds(1), nodeCoords(1))
-
   call ESMF_MeshAddNodes(mesh, nodeIds, nodeCoords, nodeOwners, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
-
+  ! assuming hexahedral cells
+  allocate(elementIds(numCells), elementTypes(numCells), elementConn(8*numCells))
+  elementTypes(:) = ESMF_MESHELEMTYPE_HEX
+  call vtk_reader_fillconnectivity(mreaderId, elementIds, elementConn)
+  call ESMF_MeshAddElements(mesh, elementIds, elementTypes, elementConn, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   write(*,*) "[", PetNo, "] point file: ", pointfilename
 
