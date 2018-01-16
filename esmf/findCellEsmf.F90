@@ -73,24 +73,42 @@ program findCell
   !   then broadcast the results to the rest of the Pets
   !
   if (PetNo == 0) then
-    call ESMF_UtilGetArgIndex('--mesh', argindex=ind)
-    if (ind /= -1) then
+
+    call ESMF_UtilGetArgIndex('-m', argindex=ind, rc=rc)
+    if (ind <= 0) then
+      print *, "ERROR: must provide VTK mesh file using -m vtk_file option"
       call PrintUsage()
       terminateProg=.true.
+    else
+      call ESMF_UtilGetArg(ind + 1, argvalue=meshfilename)
+    endif
+
+    
+    call ESMF_UtilGetArgIndex('-p', argindex=ind, rc=rc)
+    if (ind <= 0) then
+      print *, "ERROR: must provide point file using -p point_file option"
+      call PrintUsage()
+      terminateProg=.true.
+    else
+      call ESMF_UtilGetArg(ind + 1, argvalue=pointfilename)
     endif
 
     ! Group the command line arguments and broadcast to other PETs
-    commandbuf1(1)=meshfilename
-    commandbuf1(2)=pointfilename
+    commandbuf1(1) = meshfilename
+    commandbuf1(2) = pointfilename
 
-    ! Broadcast the command line arguments to all the PETs
-    call ESMF_VMBroadcast(vm, commandbuf1, len (commandbuf1)*size(commandbuf1), 0, rc=rc)
-    if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
-    meshfilename = commandbuf1(1)
-    pointfilename = commandbuf1(2)
   endif
 
+  ! Broadcast the command line arguments to all the PETs
+  call ESMF_VMBroadcast(vm, commandbuf1, len(commandbuf1)*size(commandbuf1), 0, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  meshfilename = commandbuf1(1)
+  pointfilename = commandbuf1(2)
+
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  write(*,*) "[", PetNo, "] mesh file: ", meshfilename
+  write(*,*) "[", PetNo, "] point file: ", pointfilename
 
   ! Output success
   if (PetNo==0) then
@@ -119,7 +137,7 @@ contains
   end subroutine ErrorMsgAndAbort
 
   subroutine PrintUsage()
-    print *, "Usage: findCell --mesh|-m vtk_file --point|-p point_file" 
+    print *, "Usage: findCell -m vtk_file -p point_file" 
     print *, ""
   end subroutine PrintUsage
 
