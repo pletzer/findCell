@@ -29,14 +29,11 @@ program findCell
   integer            :: count, i
 
   type(ESMF_Mesh) :: mesh
-  type(ESMF_FileFormat_Flag) :: fileTypeFlag = ESMF_FILEFORMAT_VTK
-  logical :: convertToDual = .FALSE.
-  logical :: addUserArea = .FALSE.
-  character(len=MAXNAMELEN) :: meshname = ''
-  type(ESMF_MeshLoc) :: maskFlag ! only relevant for UGRID
-  character(len=MAXNAMELEN) :: varname ! only relevant for UGRID
-  type(ESMF_DistGrid) :: nodalDistgrid
-  type(ESMF_DistGrid) :: elementDistgrid
+
+  integer                         :: numNodes, mreaderId
+  integer, allocatable            :: nodeIds(:)
+  real(ESMF_KIND_R8), allocatable :: nodeCoords(:)
+  integer, allocatable            :: nodeOwners(:)
   
   terminateProg = .false.
   
@@ -112,11 +109,23 @@ program findCell
   meshfilename = commandbuf1(1)
   pointfilename = commandbuf1(2)
 
-  ! Read the mesh (read the mesh from file)
-  mesh = ESMF_MeshCreate(meshfilename, fileTypeFlag, rc=rc)
+  mesh = ESMF_MeshCreate(parametricDim=3, spatialDim=3, coordSys=ESMF_COORDSYS_CART, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
+  ! get the vertices from the VTK file
   write(*,*) "[", PetNo, "] mesh file: ", meshfilename
+  call vtk_reader_new(mreaderId)
+  call vtk_reader_setfilename(mreaderId, meshfilename)
+  call vtk_reader_getnumberofpoints(mreaderId, numNodes)
+  allocate(nodeIds(numNodes), nodeCoords(3*numNodes), nodeOwners(numNodes), stat=rc)
+  nodeOwners(:) = PetNo
+  call vtk_reader_fillvertices(mreaderId, nodeIds(1), nodeCoords(1))
+
+  call ESMF_MeshAddNodes(mesh, nodeIds, nodeCoords, nodeOwners, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+
+
   write(*,*) "[", PetNo, "] point file: ", pointfilename
 
   ! Output success
@@ -127,6 +136,7 @@ program findCell
   endif
 
   ! clean up
+  call vtk_reader_del(mreaderId)
   call ESMF_MeshDestroy(mesh, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 

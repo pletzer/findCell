@@ -11,7 +11,7 @@ link_directories(${CMAKE_BINARY_DIR}/common "${ESMF_DIR}/lib/lib${ESMF_BOPT}/${E
 
 
 
-add_executable(findCellEsmf findCellEsmf.F90)
+add_executable(findCellEsmf findCellEsmf.F90 vtk_reader.cpp)
 #target_link_libraries(findCellEsmf CmdLineArgParser "${ESMF_LIBRARY}" gfortran pthread mpifort dl rt)
-target_link_libraries(findCellEsmf CmdLineArgParser esmf gfortran pthread mpifort dl)
+target_link_libraries(findCellEsmf "${VTK_LIBRARIES}" esmf pthread mpifort dl)
 
