@@ -2,10 +2,7 @@ program findCell
 
 ! !USES:
   use ESMF
-  use ESMF_IOScripMod
-  use ESMF_IOGridspecMod
-  use ESMF_RegridWeightGenMod
-  use ESMF_RegridWeightGenCheckMod
+  !use ESMF_MeshMod
 
   implicit none
 
@@ -26,10 +23,20 @@ program findCell
   logical            :: terminateProg
   !real(ESMF_KIND_R8) :: starttime, endtime
   logical            :: checkFlag
-   type(ESMF_LogKind_Flag) :: msgbuf(1)
+  type(ESMF_LogKind_Flag) :: msgbuf(1)
   type(ESMF_LogKind_Flag) :: logflag
   character(len=ESMF_MAXPATHLEN)  :: argvalue
   integer            :: count, i
+
+  type(ESMF_Mesh) :: mesh
+  type(ESMF_FileFormat_Flag) :: fileTypeFlag = ESMF_FILEFORMAT_VTK
+  logical :: convertToDual = .FALSE.
+  logical :: addUserArea = .FALSE.
+  character(len=MAXNAMELEN) :: meshname = ''
+  type(ESMF_MeshLoc) :: maskFlag ! only relevant for UGRID
+  character(len=MAXNAMELEN) :: varname ! only relevant for UGRID
+  type(ESMF_DistGrid) :: nodalDistgrid
+  type(ESMF_DistGrid) :: elementDistgrid
   
   terminateProg = .false.
   
@@ -105,6 +112,8 @@ program findCell
   meshfilename = commandbuf1(1)
   pointfilename = commandbuf1(2)
 
+  ! Read the mesh (read the mesh from file)
+  mesh = ESMF_MeshCreate(meshfilename, fileTypeFlag, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   write(*,*) "[", PetNo, "] mesh file: ", meshfilename
