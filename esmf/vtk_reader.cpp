@@ -7,23 +7,28 @@ void vtk_reader_new_(vtkUnstructuredGridReader** self) {
     *self = vtkUnstructuredGridReader::New();
 }
 
-void vtk_reader_setfilename_(vtkUnstructuredGridReader** self, const char* filename, int* len, ...) {
+void vtk_reader_setfilename_(vtkUnstructuredGridReader** self, 
+                             const char* filename, int* len, ...) {
     // add termination character
-    std::string fn = std::string(filename).substr(0, *len) + std::string('\0');
+    std::string fn = std::string(filename, 0, *len);
+    fn += std::string("\0");
     (*self)->SetFileName(fn.c_str());
     // read the file
     (*self)->Update();
 }
 
-void vtk_reader_getnumberofpoints_(vtkUnstructuredGridReader** self, int* n) {
+void vtk_reader_getnumberofpoints_(vtkUnstructuredGridReader** self, 
+                                   int* n) {
     *n = (*self)->GetOutput()->GetNumberOfPoints();
 }
 
-void vtk_reader_getnumberofcells_(vtkUnstructuredGridReader** self, int* n) {
+void vtk_reader_getnumberofcells_(vtkUnstructuredGridReader** self, 
+                                  int* n) {
     *n = (*self)->GetOutput()->GetNumberOfCells();
 }
 
-void vtk_reader_fillvertices_(vtkUnstructuredGridReader** self, int* pointIds, double* xyz) {
+void vtk_reader_fillvertices_(vtkUnstructuredGridReader** self, 
+                              int* pointIds, double* xyz) {
     vtkPoints* points = (*self)->GetOutput()->GetPoints();
     vtkIdType numPoints = points->GetNumberOfPoints();
     for (vtkIdType i = 0; i < numPoints; ++i) {
@@ -32,7 +37,8 @@ void vtk_reader_fillvertices_(vtkUnstructuredGridReader** self, int* pointIds, d
     }
 }
 
-void vtk_reader_fillconnectivity_(vtkUnstructuredGridReader** self, int* elementIds, int* elementConn) {
+void vtk_reader_fillconnectivity_(vtkUnstructuredGridReader** self, 
+                                  int* elementIds, int* elementConn) {
     vtkCellArray* cells = (*self)->GetOutput()->GetCells();
     vtkIdType index = 0;
     vtkIdList* ptIds = vtkIdList::New();
