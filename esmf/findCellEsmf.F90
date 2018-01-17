@@ -165,17 +165,17 @@ program findCell
   call vtk_reader_fillxyzvertices(preaderId, pointXCoords(1), pointYCoords(1), pointZCoords(1))
   call ESMF_LocStreamAddKey(points, keyName="x", keyLongName="cartesian_position_x", &
       &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointXCoords, &
-      &                     keyTypeKind=ESMF_TYPEKIND_R8, keyUnits="m", rc=rc)
+      &                     keyUnits="m", rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   call ESMF_LocStreamAddKey(points, keyName="y", keyLongName="cartesian_position_y", &
       &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointYCoords, &
-      &                     keyTypeKind=ESMF_TYPEKIND_R8, keyUnits="m", rc=rc)
+      &                     keyUnits="m", rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   call ESMF_LocStreamAddKey(points, keyName="z", keyLongName="cartesian_position_z", &
       &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointZCoords, &
-      &                     keyTypeKind=ESMF_TYPEKIND_R8, keyUnits="m", rc=rc)
+      &                     keyUnits="m", rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Attach fields to the Mesh and LocStream (needed for regridding)
@@ -187,8 +187,8 @@ program findCell
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Compute the interpolation weights
-  call ESMF_FieldRegridStore(srcField=meshField, dstField=pointField, routHandle=regridHandle, 
-                             regridMethod=ESMF_REGRIDMETHOD_BILINEAR, rc=rc)
+  call ESMF_FieldRegridStore(meshField, pointField, routeHandle=regridHandle, &
+                           & regridMethod=ESMF_REGRIDMETHOD_BILINEAR, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Extract the cell information from the regridHandle
