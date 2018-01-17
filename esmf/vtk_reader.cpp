@@ -37,6 +37,20 @@ void vtk_reader_fillvertices_(vtkUnstructuredGridReader** self,
     }
 }
 
+void vtk_reader_fillxyzvertices_(vtkUnstructuredGridReader** self, 
+                                 double* x, double* y, double* z) {
+    vtkPoints* points = (*self)->GetOutput()->GetPoints();
+    vtkIdType numPoints = points->GetNumberOfPoints();
+    double xyz[3];
+    for (vtkIdType i = 0; i < numPoints; ++i) {
+        points->GetPoint(i, &xyz[0]);
+        x[i] = xyz[0];
+        y[i] = xyz[1];
+        z[i] = xyz[2];
+    }
+}
+
+
 void vtk_reader_fillconnectivity_(vtkUnstructuredGridReader** self, 
                                   int* elementIds, int* elementConn) {
     vtkCellArray* cells = (*self)->GetOutput()->GetCells();

@@ -35,6 +35,16 @@ program findCell
   integer, allocatable            :: nodeIds(:), elementIds(:), elementTypes(:), elementConn(:)
   real(ESMF_KIND_R8), allocatable :: nodeCoords(:)
   integer, allocatable            :: nodeOwners(:)
+
+  type(ESMF_LocStream) :: points
+  integer*8 :: preaderId
+  integer :: numPoints
+  type(ESMF_Field) :: meshField, pointField
+  type(ESMF_ArraySpec) :: arrayspec
+  real(ESMF_KIND_R8), allocatable :: pointXCoords(:), pointYCoords(:), pointZCoords(:)
+
+  type(ESMF_RouteHandle) :: regridHandle
+
   
   terminateProg = .false.
   
@@ -113,10 +123,11 @@ program findCell
   pointfilename = trim(adjustl(pointfilename))
 
 
+  ! Read the mesh file
+
   mesh = ESMF_MeshCreate(parametricDim=3, spatialDim=3, coordSys=ESMF_COORDSYS_CART, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
-  ! get the vertices from the VTK file
   write(*,*) "[", PetNo, "] mesh file: ", meshfilename
   call vtk_reader_new(mreaderId)
   call vtk_reader_setfilename(mreaderId, meshfilename, len_trim(meshfilename))
@@ -137,7 +148,52 @@ program findCell
   call ESMF_MeshAddElements(mesh, elementIds, elementTypes, elementConn, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
+  ! Read the point file
+
   write(*,*) "[", PetNo, "] point file: ", pointfilename
+  call vtk_reader_new(preaderId)
+  call vtk_reader_setfilename(preaderId, pointfilename, len_trim(pointfilename))
+  call vtk_reader_getnumberofpoints(preaderId, numPoints)
+
+  points = ESMF_LocStreamCreate(name="points", localCount=numPoints, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  allocate(pointXCoords(numPoints), &
+         & pointYCoords(numPoints), &
+         & pointZCoords(numPoints), stat=rc)
+
+  call vtk_reader_fillxyzvertices(preaderId, pointXCoords(1), pointYCoords(1), pointZCoords(1))
+  call ESMF_LocStreamAddKey(points, keyName="x", keyLongName="cartesian_position_x", &
+      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointXCoords, &
+      &                     keyTypeKind=ESMF_TYPEKIND_R8, keyUnits="m", rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  call ESMF_LocStreamAddKey(points, keyName="y", keyLongName="cartesian_position_y", &
+      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointYCoords, &
+      &                     keyTypeKind=ESMF_TYPEKIND_R8, keyUnits="m", rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  call ESMF_LocStreamAddKey(points, keyName="z", keyLongName="cartesian_position_z", &
+      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointZCoords, &
+      &                     keyTypeKind=ESMF_TYPEKIND_R8, keyUnits="m", rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  ! Attach fields to the Mesh and LocStream (needed for regridding)
+  call ESMF_ArraySpecSet(arrayspec, 1, typekind=ESMF_TYPEKIND_R4, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  meshField = ESMF_FieldCreate(mesh, arrayspec, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  pointField = ESMF_FieldCreate(points, typekind=ESMF_TYPEKIND_R4, rc=rc) ! CAN I REDUCE THE MEMORY FOOTPRINT HERE?
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  ! Compute the interpolation weights
+  call ESMF_FieldRegridStore(srcField=meshField, dstField=pointField, routHandle=regridHandle, 
+                             regridMethod=ESMF_REGRIDMETHOD_BILINEAR, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+
+  ! Extract the cell information from the regridHandle
+  ! TO DO 
+
 
   ! Output success
   if (PetNo==0) then
@@ -147,6 +203,11 @@ program findCell
   endif
 
   ! clean up
+  call ESMF_FieldRegridRelease(regridHandle, rc=rc)
+  call ESMF_FieldDestroy(meshField, rc=rc)
+  call ESMF_FieldDestroy(pointField, rc=rc)
+  call vtk_reader_del(preaderId)
+  call ESMF_LocStreamDestroy(points, rc=rc)
   call vtk_reader_del(mreaderId)
   call ESMF_MeshDestroy(mesh, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
