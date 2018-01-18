@@ -155,7 +155,8 @@ program findCell
   call vtk_reader_setfilename(preaderId, pointfilename, len_trim(pointfilename))
   call vtk_reader_getnumberofpoints(preaderId, numPoints)
 
-  points = ESMF_LocStreamCreate(name="points", localCount=numPoints, rc=rc)
+  points = ESMF_LocStreamCreate(name="points", localCount=numPoints, &
+                              & coordSys=ESMF_COORDSYS_CART, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   allocate(pointXCoords(numPoints), &
@@ -163,19 +164,19 @@ program findCell
          & pointZCoords(numPoints), stat=rc)
 
   call vtk_reader_fillxyzvertices(preaderId, pointXCoords(1), pointYCoords(1), pointZCoords(1))
-  call ESMF_LocStreamAddKey(points, keyName="x", keyLongName="cartesian_position_x", &
-      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointXCoords, &
-      &                     keyUnits="m", rc=rc)
+  call ESMF_LocStreamAddKey(points, keyName="ESMF:X", farray=pointXCoords, &
+      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, &
+      &                     rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
-  call ESMF_LocStreamAddKey(points, keyName="y", keyLongName="cartesian_position_y", &
-      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointYCoords, &
-      &                     keyUnits="m", rc=rc)
+  call ESMF_LocStreamAddKey(points, keyName="ESMF:Y", farray=pointYCoords, &
+      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, &
+      &                     rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
-  call ESMF_LocStreamAddKey(points, keyName="z", keyLongName="cartesian_position_z", &
-      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, farray=pointZCoords, &
-      &                     keyUnits="m", rc=rc)
+  call ESMF_LocStreamAddKey(points, keyName="ESMF:Z", farray=pointZCoords, &
+      &                     datacopyflag=ESMF_DATACOPY_REFERENCE, &
+      &                     rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Attach fields to the Mesh and LocStream (needed for regridding)
@@ -188,7 +189,8 @@ program findCell
 
   ! Compute the interpolation weights
   call ESMF_FieldRegridStore(meshField, pointField, routeHandle=regridHandle, &
-                           & regridMethod=ESMF_REGRIDMETHOD_BILINEAR, rc=rc)
+                           & regridMethod=ESMF_REGRIDMETHOD_BILINEAR, &
+                           & unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Extract the cell information from the regridHandle
