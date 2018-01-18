@@ -6,6 +6,8 @@ parser = argparse.ArgumentParser(description='Generate random points')
 parser.add_argument('-N', type=int, default=100, help='Number of points')
 parser.add_argument('-a', type=float, default=1.0, help='Radius')
 parser.add_argument('-r', type=float, default=0.1, help='Max relative elevation')
+parser.add_argument('-o', default="points.vtk", help='Output VTK file')
+
 args = parser.parse_args()
 
 n = args.N
