@@ -2,6 +2,8 @@ program findCell
 
 ! !USES:
   use ESMF
+
+  use ESMF_PointListMod
   !use ESMF_MeshMod
 
   implicit none
@@ -9,6 +11,16 @@ program findCell
 #ifndef ESMF_MPIUNI
   include "mpif.h"
 #endif
+
+  type ESMF_TempWeights 
+        sequence
+        type(ESMF_Pointer) :: this
+  end type
+
+  type ESMF_TempUDL 
+        sequence
+        type(ESMF_Pointer) :: this
+  end type
 
   integer, parameter :: MAXNAMELEN = 64
 
@@ -45,7 +57,16 @@ program findCell
 
   type(ESMF_RouteHandle) :: regridHandle
 
-  
+  type(ESMF_Array) :: meshArray, pointArray
+  type(ESMF_PointList) :: nullPointList, pointList
+  type(ESMF_Mesh) :: nullMesh
+  integer :: intNotUsed1, intNotUsed2, has_rh, has_iw, nentries
+  type(ESMF_TempWeights) :: tweights
+  integer(ESMF_KIND_I4), allocatable         :: indices(:,:) ! or pointer?
+  real(ESMF_KIND_R8), allocatable            :: weights(:)
+  integer :: has_udl, num_udl
+  type(ESMF_TempUDL) :: tudl 
+
   terminateProg = .false.
   
   ! Check if --no_log is given, if so, call ESMF_Initialize() with ESMF_LOGKIND_NONE flag
@@ -188,9 +209,46 @@ program findCell
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Compute the interpolation weights
+#ifdef FIELD_REGRID
   call ESMF_FieldRegridStore(meshField, pointField, routeHandle=regridHandle, &
                            & regridMethod=ESMF_REGRIDMETHOD_BILINEAR, &
                            & unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+#else
+  call ESMF_FieldGet(meshField, geomtype=ESMF_GEOMTYPE_MESH, array=meshArray, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  call ESMF_FieldGet(pointField, geomtype=ESMF_GEOMTYPE_LOCSTREAM, array=pointArray, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  pointList=ESMF_PointListCreate(points, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  has_rh = 1
+  has_iw = 1
+  call c_ESMC_regrid_create(vm, mesh%this, meshArray, nullPointList, .FALSE., &
+                                nullMesh%this, pointArray, pointList, .TRUE., &
+                                ESMF_REGRIDMETHOD_BILINEAR,  &
+                                ESMF_LINETYPE_CART, & ! or ESMF_LINETYPE_GREAT_CIRCLE
+                                ESMF_NORMTYPE_DSTAREA, & ! no used
+                                ESMF_POLEMETHOD_NONE, & ! should not matter for cartesian
+                                0,                    & ! numbe rof pole points, not used  
+                                1,                    & ! use the native coordinates (0= use 3d)
+                                ESMF_UNMAPPEDACTION_IGNORE%unmappedaction, &
+                                0,                    & ! 1 id ignore degenerate cells         
+                                intNotUSed1, intNotUsed2, &
+                                regridHandle,         &
+                                has_rh, & ! has route handle
+                                has_iw, & ! has indices and weights
+                                nentries, & ! number of entries in the sparse matrix (no of elements) 
+                                tweights, & ! temporary weights
+                                has_udl, num_udl, tudl, & ! unmapped dest points
+                                rc)
+  allocate(indices(2, nentries))
+  allocate(weights(nentries))
+  if (nentries > 0)  then
+      call c_ESMC_Copy_TempWeights(tweights, indices(1,1), weights(1))
+  endif
+  !!allocate(unmappedDstList(num_udl))
+  !!call c_ESMC_Copy_TempUDL(num_udl, tudl, unmappedDstList(1))
+
+#endif
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
   ! Extract the cell information from the regridHandle
@@ -205,7 +263,9 @@ program findCell
   endif
 
   ! clean up
+#ifdef FIELD_REGRID
   call ESMF_FieldRegridRelease(regridHandle, rc=rc)
+#endif
   call ESMF_FieldDestroy(meshField, rc=rc)
   call ESMF_FieldDestroy(pointField, rc=rc)
   call vtk_reader_del(preaderId)
