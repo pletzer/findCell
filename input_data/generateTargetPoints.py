@@ -40,6 +40,6 @@ mesh.SetPoints(pts)
 #no cell
 
 writer = vtk.vtkUnstructuredGridWriter()
-writer.SetFileName('points.vtk')
+writer.SetFileName(args.o)
 writer.SetInputData(mesh)
 writer.Update()
