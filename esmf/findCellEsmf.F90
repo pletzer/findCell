@@ -240,6 +240,7 @@ program findCell
                                 tweights, & ! temporary weights
                                 has_udl, num_udl, tudl, & ! unmapped dest points
                                 rc)
+  print *,'No of entries in the sparse weight matrix', nentries, ' no of failures: ', num_udl
   allocate(indices(2, nentries))
   allocate(weights(nentries))
   if (nentries > 0)  then
