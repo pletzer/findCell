@@ -149,11 +149,11 @@ program findCell
   mesh = ESMF_MeshCreate(parametricDim=3, spatialDim=3, coordSys=ESMF_COORDSYS_CART, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
 
-  write(*,*) "[", PetNo, "] mesh file: ", meshfilename
   call vtk_reader_new(mreaderId)
   call vtk_reader_setfilename(mreaderId, meshfilename, len_trim(meshfilename))
   call vtk_reader_getnumberofpoints(mreaderId, numNodes)
   call vtk_reader_getnumberofcells(mreaderId, numCells)
+  write(*,'(a, i4, a, a, a, i8)') "[", PetNo, "] Mesh file: ", trim(meshfilename), " no cells: ", numCells
 
   allocate(nodeIds(numNodes), nodeCoords(3*numNodes), nodeOwners(numNodes), stat=rc)
 
@@ -171,10 +171,10 @@ program findCell
 
   ! Read the point file
 
-  write(*,*) "[", PetNo, "] point file: ", pointfilename
   call vtk_reader_new(preaderId)
   call vtk_reader_setfilename(preaderId, pointfilename, len_trim(pointfilename))
   call vtk_reader_getnumberofpoints(preaderId, numPoints)
+  write(*,'(a, i4, a, a, a, i8)') "[", PetNo, "] Point file: ", trim(pointfilename), " no points: ", numPoints
 
   points = ESMF_LocStreamCreate(name="points", localCount=numPoints, &
                               & coordSys=ESMF_COORDSYS_CART, rc=rc)
@@ -228,7 +228,7 @@ program findCell
                                 ESMF_LINETYPE_CART, & ! or ESMF_LINETYPE_GREAT_CIRCLE
                                 ESMF_NORMTYPE_DSTAREA, & ! no used
                                 ESMF_POLEMETHOD_NONE, & ! should not matter for cartesian
-                                0,                    & ! numbe rof pole points, not used  
+                                0,                    & ! number of pole points, not used  
                                 1,                    & ! use the native coordinates (0= use 3d)
                                 ESMF_UNMAPPEDACTION_IGNORE%unmappedaction, &
                                 0,                    & ! 1 id ignore degenerate cells         
