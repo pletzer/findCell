@@ -67,6 +67,8 @@ program findCell
   integer :: has_udl, num_udl
   type(ESMF_TempUDL) :: tudl 
 
+  real :: tic, tac
+
   terminateProg = .false.
   
   ! Check if --no_log is given, if so, call ESMF_Initialize() with ESMF_LOGKIND_NONE flag
@@ -153,7 +155,7 @@ program findCell
   call vtk_reader_setfilename(mreaderId, meshfilename, len_trim(meshfilename))
   call vtk_reader_getnumberofpoints(mreaderId, numNodes)
   call vtk_reader_getnumberofcells(mreaderId, numCells)
-  write(*,'(a, i4, a, a, a, i8)') "[", PetNo, "] Mesh file: ", trim(meshfilename), " no cells: ", numCells
+  write(*,'(a, i4, a, a, a, i10)') "[", PetNo, "] Mesh file: ", trim(meshfilename), " no cells: ", numCells
 
   allocate(nodeIds(numNodes), nodeCoords(3*numNodes), nodeOwners(numNodes), stat=rc)
 
@@ -222,6 +224,7 @@ program findCell
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
   has_rh = 1
   has_iw = 1
+  call cpu_time(tic)
   call c_ESMC_regrid_create(vm, mesh%this, meshArray, nullPointList, .FALSE., &
                                 nullMesh%this, pointArray, pointList, .TRUE., &
                                 ESMF_REGRIDMETHOD_BILINEAR,  &
@@ -240,7 +243,11 @@ program findCell
                                 tweights, & ! temporary weights
                                 has_udl, num_udl, tudl, & ! unmapped dest points
                                 rc)
-  print *,'No of entries in the sparse weight matrix', nentries, ' no of failures: ', num_udl
+  if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
+  call cpu_time(tac)
+  write(*, '(a, i3, a, f3.0, a)') "Number of failures: ", num_udl, " (", 100*real(num_udl)/real(numPoints), " %)"
+  write(*, '(a, f10.6)') "Avg time per point  (s): ", (tac - tic)/numPoints
+  write(*, '(a, f10.3)') "Time for all points (s): ", (tac - tic)
   allocate(indices(2, nentries))
   allocate(weights(nentries))
   if (nentries > 0)  then
