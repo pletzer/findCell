@@ -214,9 +214,9 @@ program findCell
                            & regridMethod=ESMF_REGRIDMETHOD_BILINEAR, &
                            & unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
 #else
-  call ESMF_FieldGet(meshField, geomtype=ESMF_GEOMTYPE_MESH, array=meshArray, rc=rc)
+  call ESMF_FieldGet(meshField, array=meshArray, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
-  call ESMF_FieldGet(pointField, geomtype=ESMF_GEOMTYPE_LOCSTREAM, array=pointArray, rc=rc)
+  call ESMF_FieldGet(pointField, array=pointArray, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
   pointList=ESMF_PointListCreate(points, rc=rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
