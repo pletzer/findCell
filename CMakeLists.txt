@@ -4,6 +4,7 @@ project(findCell)
 enable_language(Fortran)
 enable_testing()
 
+set(FORTRAN_COMPILER_ID "GNU" CACHE STRING "Either Intel or GNU")
 set(ESMF_DIR "NOT-FOUND" CACHE PATH "Top directory where ESMF was built")
 set(ESMF_OS "Linux" CACHE STRING "ESMF target OS (eg Linux or Unicos)")
 set(ESMF_COMPILER "gfortran" CACHE STRING "ESMF compiler (eg gfortran or intel)")
