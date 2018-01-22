@@ -2,6 +2,7 @@
 //
 #include <iostream>
 #include <string>
+#include <vector>
 #include <ctime>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGridReader.h>
@@ -14,6 +15,7 @@ int main(int argc, char** argv) {
     args.set("-m", std::string("cs.vtk"), "Mesh file name.");
     args.set("-p", std::string("points.vtk"), "File name containing target points.");
     args.set("-t", 1.e-10, "Tolerance.");
+    args.set("-v", false, "Set verbosity.");
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
 
@@ -42,6 +44,7 @@ int main(int argc, char** argv) {
     std::cout << "Point file: " << args.get<std::string>("-p") << " no points: " << points->GetNumberOfPoints() << '\n';
 
     // iterate over each point
+    std::vector<size_t> unmappedPointIds;
     double xyz[3];
     const double tol2 = args.get<double>("-t");
     int subId;
@@ -53,10 +56,21 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < numPoints; ++i) {
         points->GetPoints()->GetPoint(i, xyz);
         vtkIdType cellId = mesh->FindCell(xyz, NULL, 0, tol2, subId, pcoords, weights);
-        if (cellId < 0) totFailures++;
+        if (cellId < 0) {
+            totFailures++;
+            unmappedPointIds.push_back(i);
+        }
     }
     std::clock_t toc = clock();
     double elapsed_secs = double(toc - tic) / CLOCKS_PER_SEC;
+
+    if (args.get<bool>("-v")) {
+        for (size_t j = 0; j < unmappedPointIds.size(); ++j) {
+            size_t i = unmappedPointIds[j];
+            points->GetPoints()->GetPoint(i, xyz);
+            std::cout << j << " unmapped point " << i << " " << xyz[0] << ", " << xyz[1] << ", " << xyz[2] << '\n';
+        }
+    }
 
     std::cout << "Number of failures     : " << totFailures << " (" << 100.*double(totFailures)/double(numPoints) << " %)\n";
     std::cout << "Avg time per point  (s): " << elapsed_secs/double(numPoints) << '\n';
