@@ -26,7 +26,6 @@ To compile, type:
 ## How to run
 
 ```cd ../input_data``` and run ```sh generateCubedSphereMesh.py```. This will generate cubed-sphere 3D meshes of various resolutions and save the meshes in VTK files (cs*.vtk). 
-```
 
 ```cd ../build``` and run the tests: ```sh input_data/runFindCell.sh > results.csv``` (this may take up to a few hours). You can plot the results with ```python plotResults.py -i results.csv```.
 
