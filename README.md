@@ -19,19 +19,13 @@ To compile, type:
 
  * ```git clone https://github.com/pletzer/findCell```
  * ```cd findCell; mkdir build; cd build```
- * ```
- cmake -DFORTRAN_COMPILER_ID=$fortran_compiler_id \
- -DESMF_DIR=$ESMF_DIR -DESMF_OS=$ESMF_OS -DESMF_COMM=$ESMF_COMM \
- -DMPI_DIR=$MPI_DIR -DVTK_DIR=$vtk_dir ..
- ```
+ * ```cmake -DFORTRAN_COMPILER_ID=$fortran_compiler_id -DESMF_DIR=$ESMF_DIR -DESMF_OS=$ESMF_OS -DESMF_COMM=$ESMF_COMM -DMPI_DIR=$MPI_DIR -DVTK_DIR=$vtk_dir ..```
  * ```make```
 
 
 ## How to run
 
-```cd ../input_data``` and run 
- * ```python generateTargetPoints.py -N 1000000 -r 0.1 -o points.vtk```. This will generate 1 million random target points on the sphere with relative extrusion of 0.1. 
- * ```sh generateCubedSphereMesh.sh```. This will generate cubed-sphere 3D meshes of various resolutions and save the meshes in VTK files (cs*.vtk). 
+```cd ../input_data``` and run ```python generateTargetPoints.py -N 1000000 -r 0.1 -o points.vtk```; this will generate 1 million random target points on the sphere with relative extrusion of 0.1. ```sh generateCubedSphereMesh.sh```; this will generate cubed-sphere 3D meshes of various resolutions and save the meshes in VTK files (cs*.vtk). 
 
 ```cd ../build``` and run the tests: ```sh input_data/runFindCell.sh > results.csv``` (this may take up to a few hours). You can plot the results with ```python plotResults.py -i results.csv```.
 
