@@ -50,7 +50,7 @@ program findCell
 
   type(ESMF_LocStream) :: points
   integer*8 :: preaderId
-  integer :: numPoints
+  integer :: numPoints, dst_index
   type(ESMF_Field) :: meshField, pointField
   type(ESMF_ArraySpec) :: arrayspec
   real(ESMF_KIND_R8), allocatable :: pointXCoords(:), pointYCoords(:), pointZCoords(:)
@@ -68,6 +68,8 @@ program findCell
   type(ESMF_TempUDL) :: tudl 
 
   real :: tic, tac
+  logical :: verbose = .FALSE.
+  integer, allocatable :: mappedPointIds(:)
 
   terminateProg = .false.
   
@@ -121,7 +123,6 @@ program findCell
       call ESMF_UtilGetArg(ind + 1, argvalue=meshfilename)
     endif
 
-    
     call ESMF_UtilGetArgIndex('-p', argindex=ind, rc=rc)
     if (ind <= 0) then
       print *, "ERROR: must provide point file using -p point_file option"
@@ -129,6 +130,11 @@ program findCell
       terminateProg=.true.
     else
       call ESMF_UtilGetArg(ind + 1, argvalue=pointfilename)
+    endif
+
+    call ESMF_UtilGetArgIndex('-v', argindex=ind, rc=rc)
+    if (ind > 0) then
+      verbose = .TRUE.
     endif
 
     ! Group the command line arguments and broadcast to other PETs
@@ -245,30 +251,41 @@ program findCell
                                 rc)
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
   call cpu_time(tac)
-  write(*, '(a, i3, a, f3.0, a)') "Number of failures: ", num_udl, " (", 100*real(num_udl)/real(numPoints), " %)"
-  write(*, '(a, f10.6)') "Avg time per point  (s): ", (tac - tic)/numPoints
-  write(*, '(a, f10.3)') "Time for all points (s): ", (tac - tic)
+
   allocate(indices(2, nentries))
   allocate(weights(nentries))
   if (nentries > 0)  then
-      call c_ESMC_Copy_TempWeights(tweights, indices(1,1), weights(1))
+    call c_ESMC_Copy_TempWeights(tweights, indices(1,1), weights(1))
   endif
+  allocate(mappedPointIds(numPoints))
+  mappedPointIds(:) = 0
+  ! Iterate over the number of weights
+  do i = 1, size(indices, 2)
+    dst_index = indices(2, i)
+    ! This point was mapped
+    mappedPointIds(dst_index) = 1
+  enddo
+  count = 0
+  do i = 1, numPoints
+    if (mappedPointIds(i) == 0) then
+      if (verbose) then 
+        write(*, '(i5, a, i6, a, f12.6, a, f12.6, a, f12.6)') &
+        & count, ' unmapped point ', i-1, ' ', & ! zero based indexing
+        & pointXCoords(i), ', ', pointYCoords(i), ', ', pointZCoords(i)
+      endif
+      count = count + 1
+    endif
+  enddo
+  deallocate(mappedPointIds)
+
+  write(*, '(a, i3, a, f3.0, a)') "Number of failures: ", count, " (", 100*real(count)/real(numPoints), " %)"
+  write(*, '(a, f10.6)') "Avg time per point  (s): ", (tac - tic)/numPoints
+  write(*, '(a, f10.3)') "Time for all points (s): ", (tac - tic)
   !!allocate(unmappedDstList(num_udl))
   !!call c_ESMC_Copy_TempUDL(num_udl, tudl, unmappedDstList(1))
 
 #endif
   if (rc /= ESMF_SUCCESS) call ErrorMsgAndAbort(PetNo)
-
-  ! Extract the cell information from the regridHandle
-  ! TO DO 
-
-
-  ! Output success
-  if (PetNo==0) then
-    write(*,*) "Successful execution."
-    !write(*,*) "Completed weight generation in ", (endtime-starttime)*1000, "msecs"
-    write(*,*) 
-  endif
 
   ! clean up
 #ifdef FIELD_REGRID
