@@ -3,7 +3,7 @@
 build_dir=@CMAKE_BINARY_DIR@
 pointfile="@CMAKE_SOURCE_DIR@/input_data/points.vtk"
 
-meshfiles=$(ls @CMAKE_SOURCE_DIR@/input_data/cs*.vtk | grep -P 'cs\d+.vtk')
+meshfiles=$(ls @CMAKE_SOURCE_DIR@/input_data/cs*.vtk | grep -E 'cs[0-9]+.vtk')
 
 echo "executable,numPoints,numCells,avgTimePerPoint,time,numFailures"
 
