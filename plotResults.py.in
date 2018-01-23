@@ -27,7 +27,7 @@ for exe in legends:
 	plt.loglog(ns, ts, colors[count] + '-')
 	count += 1
 
-plt.legend(legends)
+plt.legend(legends, loc=2)
 plt.title('Time to find one point in unstruct mesh')
 plt.xlabel('no of cells')
 plt.ylabel('time [s]')
