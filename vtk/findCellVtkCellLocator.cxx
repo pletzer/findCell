@@ -46,14 +46,6 @@ int main(int argc, char** argv) {
     vtkUnstructuredGrid* points = pointReader->GetOutput();
     std::cout << "Point file: " << args.get<std::string>("-p") << " no points: " << points->GetNumberOfPoints() << '\n';
 
-    // build the cell locator
-    std::vector<size_t> unmappedPointIds;
-    vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetDataSet(mesh);
-    loc->SetNumberOfCellsPerBucket(args.get<int>("-b"));
-    loc->BuildLocator();
-
-    // iterate over each point
     double xyz[3];
     const double tol2 = args.get<double>("-t");
     vtkGenericCell* genCell = vtkGenericCell::New();
@@ -61,7 +53,17 @@ int main(int argc, char** argv) {
     double weights[8];
     int totFailures = 0;
     size_t numPoints = points->GetNumberOfPoints();
-    std::clock_t tic = clock();
+
+    // build the cell locator
+    std::vector<size_t> unmappedPointIds;
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetDataSet(mesh);
+    loc->SetNumberOfCellsPerBucket(args.get<int>("-b"));
+
+    std::clock_t tic = clock(); // include the cost of building the locator
+    loc->BuildLocator();
+
+    // iterate over each point
     for (size_t i = 0; i < numPoints; ++i) {
         points->GetPoints()->GetPoint(i, xyz);
         vtkIdType cellId = loc->FindCell(xyz, tol2, genCell, pcoords, weights);
