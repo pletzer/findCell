@@ -25,7 +25,7 @@ To compile, type:
 
 ## How to run
 
-```cd ../input_data``` and run ```python generateTargetPoints.py -N 1000000 -r 0.1 -o points.vtk```; this will generate 1 million random target points on the sphere with relative extrusion of 0.1. ```sh generateCubedSphereMesh.sh```; this will generate cubed-sphere 3D meshes of various resolutions and save the meshes in VTK files (cs*.vtk). 
+```cd ../input_data``` and run ```python generateTargetPoints.py -N 100000 -r 0.1 -o points.vtk```; this will generate 100k random target points on the sphere with relative extrusion of 0.1. ```sh generateCubedSphereMesh.sh```; this will generate cubed-sphere 3D meshes of various resolutions and save the meshes in VTK files (cs*.vtk). 
 
 ```cd ../build``` and run the tests: ```sh input_data/runFindCell.sh > results.csv``` (this may take up to a few hours). You can plot the results with ```python plotResults.py -i results.csv```.
 
