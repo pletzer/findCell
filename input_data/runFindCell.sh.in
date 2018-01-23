@@ -4,16 +4,17 @@ build_dir=@CMAKE_BINARY_DIR@
 pointfile="@CMAKE_SOURCE_DIR@/input_data/points.vtk"
 
 meshfiles=`ls @CMAKE_SOURCE_DIR@/input_data/cs*.vtk | grep -P 'cs\d+.vtk'`
+
 echo "executable numPoints numCells avgTimePerPoint time numFailures"
 for meshfile in $meshfiles; do 
   for exe in vtk/findCellVtk vtk/findCellVtkCellLocator esmf/findCellEsmf; do 
     time $build_dir/$exe -m $meshfile -p $pointfile > res.txt
     # get the timings and other information out
-    numCells=`cat res.txt | perl -ne 'if (/num cells:\s*(\d+)/){print $1}'`
-    numPoints=`cat res.txt | perl -ne 'if (/num points:\s*(\d+)/){print $1}'`
-    avgTimePerPoint=`cat res.txt | perl -ne 'if (/Avg time per point\s*(s):\s*(\d*\.\d+)/){print $1}'`
-    totalTime=`cat res.txt | perl -ne 'if (/Time for all points (s):\s*(\d*\.\d+)/){print $1}'`
-    numFailures=`cat res.txt | perl -ne 'if (/Number of failures\s*:\s*(\d+)/){print $1}'`
+    numCells=`cat res.txt | perl -ne 'if (/no cells:\s*(\d+)/){print "$1\n";}'`
+    numPoints=`cat res.txt | perl -ne 'if (/no points:\s*(\d+)/){print "$1\n";}'`
+    avgTimePerPoint=`cat res.txt | perl -ne 'if (/Avg time per point\s*(s):\s*(\d*\.\d+)/){print "$1\n";}'`
+    totalTime=`cat res.txt | perl -ne 'if (/Time for all points (s):\s*(\d*\.\d+)/){print "$1\n";}'`
+    numFailures=`cat res.txt | perl -ne 'if (/Number of failures\s*:\s*(\d+)/){print "$1\n";}'`
     echo "$exe $numPoints $numCells $avgTimePerPoint $totalTime $numFailures"
   done
 done
