@@ -26,6 +26,8 @@ message(STATUS "C++     compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "           flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS "==============================================================")
 
+configure_file(plotResults.py.in plotResults.py)
+
 add_subdirectory(input_data)
 add_subdirectory(common)
 add_subdirectory(vtk)

@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+from matplotlib.pylab import plt
+import pandas
+import argparse
+
+parser = argparse.ArgumentParser(description='Plot timings.')
+parser.add_argument('-i', dest='input', default='results.csv',
+                    help='Result file')
+args = parser.parse_args()
+
+
+df = pandas.read_csv(args.input, sep=',')
+
+colors = ['b', 'g', 'r']
+legends = ['findCellVtk', 'findCellVtkCellLocator', 'findCellEsmf']
+count = 0
+for exe in legends:
+	df2 = df[df['executable'] == exe]
+	ts = df2['avgTimePerPoint'].values
+	ns = df2['numCells'].values
+	# sort
+	nt = zip(ns, ts)
+	nt.sort()
+	ts = [ti for ni, ti in nt]
+	ns = [ni for ni, ti in nt]
+	plt.loglog(ns, ts, colors[count] + '-')
+	count += 1
+
+plt.legend(legends)
+plt.title('Time to find one point in unstruct mesh')
+plt.xlabel('no of cells')
+plt.ylabel('time [s]')
+
+plt.show()
