@@ -34,5 +34,5 @@ To compile, type:
 Below we searched 100,000 points randomly distributed one a cubed-sphere mesh expressed in Cartesian coordinates. The results showing the average time to find one point in the mesh, including the time to set up the cell 
 locator data structure. The vtkCellLocator class is able to find the cell containing a point in near constant time (about 10 microseconds, 100 cells per bucket) as the mesh resolution increases (up to 60 million cells). 
 
-![alt Timings](../figs/i7-477-2.2GHz.png)
+![alt Timings](figs/i7-477-2.2GHz.png)
 
