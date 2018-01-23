@@ -26,6 +26,7 @@ message(STATUS "C++     compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "           flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS "==============================================================")
 
+add_subdirectory(input_data)
 add_subdirectory(common)
 add_subdirectory(vtk)
 add_subdirectory(esmf)
