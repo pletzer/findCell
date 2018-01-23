@@ -19,7 +19,7 @@ To compile, type:
 
  * ```git clone https://github.com/pletzer/findCell```
  * ```cd findCell; mkdir build; cd build```
- * ```cmake -DFORTRAN_COMPILER_ID=$fortran_compiler_id -DESMF_DIR=$ESMF_DIR -DESMF_OS=$ESMF_OS -DESMF_COMM=$ESMF_COMM -DMPI_DIR=$MPI_DIR -DVTK_DIR=$vtk_dir ..```
+ * ```cmake -DFORTRAN_COMPILER_ID=$fortran_compiler_id -DESMF_DIR=$ESMF_DIR -DESMF_OS=$ESMF_OS -DESMF_COMM=$ESMF_COMM -DMPI_DIR=$MPI_DIR -DVTK_DIR=$VTK_DIR ..```
  * ```make```
 
 

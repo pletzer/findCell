@@ -278,7 +278,7 @@ program findCell
   enddo
   deallocate(mappedPointIds)
 
-  write(*, '(a, i3, a, f3.0, a)') "Number of failures: ", count, " (", 100*real(count)/real(numPoints), " %)"
+  write(*, '(a, i6, a, f4.1, a)') "Number of failures: ", count, " (", 100*real(count)/real(numPoints), " %)"
   write(*, '(a, f10.6)') "Avg time per point  (s): ", (tac - tic)/numPoints
   write(*, '(a, f10.3)') "Time for all points (s): ", (tac - tic)
   !!allocate(unmappedDstList(num_udl))
