@@ -29,7 +29,7 @@ for exe in legends:
 
 plt.legend(legends, loc=2)
 plt.title('Time to find one point in unstruct mesh')
-plt.xlabel('no of cells')
+plt.xlabel('num cells')
 plt.ylabel('time [s]')
 
 plt.show()
